@@ -8,27 +8,28 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet"/>
 
 <style>
-/* (STYLE IDENTIQUE — inchangé pour garder la lisibilité) */
+/* === TON STYLE ORIGINAL COMPLET === */
 :root{--bg:#0a0a0a;--bgr:#111;--tp:#e8e8e8;--ts:#a0a0a0;--tm:#686868;--bd:#2a2a2a;--bda:#555;--ac:#c8b896;--acd:#6b5e3f;--dg:#8b3a3a;--blk:#0d0d0d;}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 body{min-height:100vh;background:var(--bg);color:var(--tp);font-family:'IBM Plex Mono',monospace;font-size:.85rem;padding:36px 20px 80px;display:flex;flex-direction:column;align-items:center;}
 .wrap{width:100%;max-width:600px;}
 .screen{display:none;}
 .screen.active{display:block;}
-.title{font-family:'Cormorant Garamond',serif;font-size:2.5rem;margin-bottom:4px;}
-.sub{font-size:.6rem;margin-bottom:36px;color:var(--tm);}
+.title{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(2rem,10vw,3rem);}
+.sub{font-size:.58rem;color:var(--tm);margin-bottom:36px;}
 .size-row{display:flex;gap:7px;margin-bottom:32px;}
 .sz{flex:1;padding:13px;background:transparent;border:1px solid var(--bd);color:var(--tm);cursor:pointer;}
 .sz.on{border-color:var(--acd);color:var(--ac);}
 .btn-p{display:block;width:100%;max-width:320px;margin:0 auto;padding:13px;background:transparent;border:1px solid var(--bda);color:var(--ts);cursor:pointer;}
 .btn-g{background:transparent;border:none;color:var(--tm);cursor:pointer;}
+.cell{width:38px;height:36px;cursor:pointer;}
 </style>
 </head>
 
 <body>
 <div class="wrap">
 
-<!-- ÉCRAN 1 -->
+<!-- ===== CONFIG ===== -->
 <div class="screen active" id="s0">
   <div class="title">Grille</div>
   <div class="sub">Outil de déduction</div>
@@ -46,12 +47,12 @@ body{min-height:100vh;background:var(--bg);color:var(--tp);font-family:'IBM Plex
   </div>
 </div>
 
-<!-- ÉCRAN 2 -->
+<!-- ===== GRILLE ===== -->
 <div class="screen" id="s1">
-  <h2 id="gtitle">Grille</h2>
-  <div id="gcont"></div>
+  <div class="title" style="font-size:2rem;" id="gtitle">Grille</div>
+  <div id="gcont" style="margin-top:20px;"></div>
 
-  <div class="bact" style="margin-top:20px;">
+  <div style="margin-top:28px;display:flex;gap:20px;">
     <button class="btn-g" onclick="back()">← Choix de la grille</button>
     <button class="btn-g" onclick="doReset()">Réinitialiser</button>
   </div>
@@ -62,14 +63,16 @@ body{min-height:100vh;background:var(--bg);color:var(--tp);font-family:'IBM Plex
 <script>
 let N=3, cats=[], cells={};
 
+/* ===== LIMITATION ===== */
 function setN(n,btn){
-  if(n !== 3 && n !== 4) return; // sécurité
+  if(n!==3 && n!==4) return;
   N=n;
   document.querySelectorAll('.sz').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
   renderForm();
 }
 
+/* ===== CATEGORIES ===== */
 function defCats(n){
   const base=[
     {name:'Suspects',items:Array.from({length:n},(_,i)=>`Suspect ${i+1}`)},
@@ -86,21 +89,58 @@ function renderForm(){
   f.innerHTML='';
   defs.forEach(cat=>{
     const div=document.createElement('div');
-    div.innerHTML=`<p>${cat.name}</p>`;
+    div.style.marginBottom="12px";
+    const title=document.createElement('div');
+    title.textContent=cat.name;
+    div.appendChild(title);
     cat.items.forEach(it=>{
       const inp=document.createElement('input');
       inp.value=it;
+      inp.style.display="block";
+      inp.style.marginBottom="4px";
       div.appendChild(inp);
     });
     f.appendChild(div);
   });
 }
 
+/* ===== GRILLE ===== */
 function openGrid(){
+  cats=defCats(N);
+  document.getElementById('gcont').innerHTML='';
+  document.getElementById('gcont').appendChild(buildTable());
   document.getElementById('s0').classList.remove('active');
   document.getElementById('s1').classList.add('active');
 }
 
+function buildTable(){
+  const table=document.createElement('table');
+
+  cats[0].items.forEach((row,r)=>{
+    const tr=document.createElement('tr');
+
+    cats[1].items.forEach((col,c)=>{
+      const td=document.createElement('td');
+      const btn=document.createElement('button');
+      btn.className='cell';
+      btn.textContent='·';
+
+      btn.onclick=()=>{
+        const v=btn.textContent;
+        btn.textContent = v==='·' ? '◆' : v==='◆' ? '✕' : '·';
+      };
+
+      td.appendChild(btn);
+      tr.appendChild(td);
+    });
+
+    table.appendChild(tr);
+  });
+
+  return table;
+}
+
+/* ===== NAV ===== */
 function back(){
   document.getElementById('s1').classList.remove('active');
   document.getElementById('s0').classList.add('active');
