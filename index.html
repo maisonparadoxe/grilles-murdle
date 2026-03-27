@@ -4,154 +4,311 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Grille de Déduction</title>
-
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet"/>
-
 <style>
-/* === TON STYLE ORIGINAL COMPLET === */
 :root{--bg:#0a0a0a;--bgr:#111;--tp:#e8e8e8;--ts:#a0a0a0;--tm:#686868;--bd:#2a2a2a;--bda:#555;--ac:#c8b896;--acd:#6b5e3f;--dg:#8b3a3a;--blk:#0d0d0d;}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 body{min-height:100vh;background:var(--bg);color:var(--tp);font-family:'IBM Plex Mono',monospace;font-size:.85rem;padding:36px 20px 80px;display:flex;flex-direction:column;align-items:center;}
+::-webkit-scrollbar{width:4px;height:4px;}::-webkit-scrollbar-thumb{background:#222;}
 .wrap{width:100%;max-width:600px;}
-.screen{display:none;}
-.screen.active{display:block;}
-.title{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(2rem,10vw,3rem);}
-.sub{font-size:.58rem;color:var(--tm);margin-bottom:36px;}
+.screen{display:none;}.screen.active{display:block;}
+.title{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(2rem,10vw,3rem);letter-spacing:.06em;line-height:1;margin-bottom:4px;}
+.sub{font-size:.58rem;letter-spacing:.3em;text-transform:uppercase;color:var(--tm);margin-bottom:36px;}
+.lbl{font-size:.58rem;letter-spacing:.28em;text-transform:uppercase;color:var(--tm);margin-bottom:10px;display:block;}
 .size-row{display:flex;gap:7px;margin-bottom:32px;}
-.sz{flex:1;padding:13px;background:transparent;border:1px solid var(--bd);color:var(--tm);cursor:pointer;}
-.sz.on{border-color:var(--acd);color:var(--ac);}
-.btn-p{display:block;width:100%;max-width:320px;margin:0 auto;padding:13px;background:transparent;border:1px solid var(--bda);color:var(--ts);cursor:pointer;}
-.btn-g{background:transparent;border:none;color:var(--tm);cursor:pointer;}
-.cell{width:38px;height:36px;cursor:pointer;}
+.sz{flex:1;padding:13px 4px;background:transparent;border:1px solid var(--bd);color:var(--tm);font-family:'IBM Plex Mono',monospace;font-size:.7rem;letter-spacing:.12em;cursor:pointer;text-align:center;transition:border-color 150ms,color 150ms;}
+.sz:hover{border-color:var(--bda);color:var(--ts);}.sz.on{border-color:var(--acd);color:var(--ac);}
+.cat-block{margin-bottom:22px;}
+.cat-hrow{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--acd);}
+.cni{background:transparent;border:none;border-bottom:1px solid var(--bd);color:var(--ac);font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;padding:3px 0;width:100%;outline:none;}
+.cni:focus{border-color:var(--acd);}
+.items-col{display:flex;flex-direction:column;gap:5px;padding-left:15px;}
+.ii{background:var(--bgr);border:1px solid var(--bd);color:var(--tp);font-family:'IBM Plex Mono',monospace;font-size:.7rem;letter-spacing:.06em;padding:8px 12px;outline:none;transition:border-color 150ms;width:100%;}
+.ii:focus{border-color:var(--bda);}.ii::placeholder{color:var(--tm);}
+hr{border:none;border-top:1px solid var(--bd);margin:18px 0;}
+.btn-p{display:block;width:100%;max-width:320px;margin:0 auto;padding:13px 24px;background:transparent;border:1px solid var(--bda);color:var(--ts);font-family:'IBM Plex Mono',monospace;font-size:.7rem;letter-spacing:.25em;text-transform:uppercase;cursor:pointer;transition:border-color 200ms,color 200ms;}
+.btn-p:hover{border-color:var(--acd);color:var(--ac);}
+.btn-g{background:transparent;border:1px solid transparent;color:var(--tm);font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;padding:6px 0;transition:color 150ms;}
+.btn-g:hover{color:var(--ts);}
+
+/* ── STAIRCASE GRID ── */
+.gscroll{overflow-x:auto;width:100%;-webkit-overflow-scrolling:touch;}
+.gscroll::-webkit-scrollbar{height:3px;}
+table.sc{border-collapse:collapse;}
+table.sc th,table.sc td{border:1px solid var(--bd);}
+.sc .corner{background:var(--bg);border-color:transparent;}
+.sc .ch{font-size:.54rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ts);background:var(--bgr);text-align:center;padding:6px 3px;white-space:nowrap;}
+.sc .ih{font-size:.52rem;color:var(--tm);background:var(--bgr);text-align:center;padding:5px 2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:42px;width:42px;}
+.sc .rgl{writing-mode:vertical-rl;transform:rotate(180deg);font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ts);background:var(--bgr);text-align:center;padding:6px 3px;white-space:nowrap;width:20px;}
+.sc .ril{font-size:.58rem;color:var(--tp);background:var(--bgr);padding:4px 8px 4px 5px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:68px;max-width:68px;}
+.sc td.dc{padding:0;width:38px;min-width:38px;height:36px;vertical-align:middle;}
+.sc td.blk{background:var(--blk);border-color:#181818;}
+.cell{width:38px;height:36px;background:transparent;border:none;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;margin:0;padding:0;font-family:'IBM Plex Mono',monospace;transition:background 120ms;}
+.cell:hover{background:rgba(200,184,150,.05);}
+.cell[data-s=yes]{color:var(--ac);background:rgba(200,184,150,.07);}
+.cell[data-s=no]{color:var(--dg);background:rgba(139,58,58,.06);}
+.cell[data-s=""]{color:var(--tm);}
+.sc .gbl{border-left:2px solid #484848!important;}
+.sc .gbt{border-top:2px solid #484848!important;}
+
+/* Legend + Answers */
+.legend{display:flex;gap:18px;margin-top:12px;padding-top:12px;border-top:1px solid var(--bd);}
+.leg{display:flex;align-items:center;gap:7px;font-size:.56rem;letter-spacing:.15em;text-transform:uppercase;color:var(--tm);}
+.answers{margin-top:28px;padding-top:20px;border-top:1px solid var(--bd);}
+.arow{display:flex;align-items:baseline;gap:12px;margin-bottom:14px;}
+.aq{font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--tm);min-width:65px;}
+.aline{flex:1;border:none;border-bottom:1px solid var(--bd);background:transparent;color:var(--tp);font-family:'IBM Plex Mono',monospace;font-size:.75rem;padding:4px 2px;outline:none;transition:border-color 150ms;}
+.aline:focus{border-color:var(--acd);}.aline::placeholder{color:var(--tm);opacity:.45;}
+.notes{width:100%;background:var(--bgr);border:1px solid var(--bd);color:var(--tp);font-family:'IBM Plex Mono',monospace;font-size:.78rem;line-height:1.7;padding:14px 16px;resize:vertical;min-height:90px;outline:none;margin-top:8px;}
+.notes:focus{border-color:var(--bda);}.notes::placeholder{color:var(--tm);opacity:.45;}
+.bact{display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding-top:20px;border-top:1px solid var(--bd);}
+.ghdr{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:24px;}
+.case-inp{background:transparent;border:none;border-bottom:1px solid var(--bd);color:var(--tm);font-family:'IBM Plex Mono',monospace;font-size:.65rem;letter-spacing:.2em;padding:3px 0;width:110px;outline:none;text-transform:uppercase;}
+.case-inp:focus{border-color:var(--acd);color:var(--ts);}.case-inp::placeholder{color:var(--tm);opacity:.5;}
+
+@media(max-width:480px){
+  body{padding:24px 14px 60px;}
+  .sc .ril{width:50px;max-width:50px;font-size:.48rem;padding:4px 4px 4px 3px;}
+  .sc td.dc{width:32px;min-width:32px;height:32px;}
+  .cell{width:32px;height:32px;font-size:.8rem;}
+  .sc .ih{max-width:34px;width:34px;font-size:.46rem;}
+  .sc .rgl{font-size:.44rem;width:16px;}
+}
 </style>
 </head>
-
 <body>
 <div class="wrap">
 
-<!-- ===== CONFIG ===== -->
 <div class="screen active" id="s0">
   <div class="title">Grille</div>
   <div class="sub">Outil de déduction</div>
-
-  <span>Taille</span>
+  <span class="lbl">Taille</span>
   <div class="size-row">
     <button class="sz on" onclick="setN(3,this)">3×3</button>
     <button class="sz" onclick="setN(4,this)">4×4</button>
   </div>
-
+  <span class="lbl">Catégories &amp; éléments</span>
   <div id="cform"></div>
-
-  <div style="margin-top:24px;">
-    <button class="btn-p" onclick="openGrid()">Ouvrir la grille →</button>
-  </div>
+  <div style="margin-top:24px;"><button class="btn-p" onclick="openGrid()">Ouvrir la grille →</button></div>
 </div>
 
-<!-- ===== GRILLE ===== -->
 <div class="screen" id="s1">
-  <div class="title" style="font-size:2rem;" id="gtitle">Grille</div>
-  <div id="gcont" style="margin-top:20px;"></div>
-
-  <div style="margin-top:28px;display:flex;gap:20px;">
-    <button class="btn-g" onclick="back()">← Choix de la grille</button>
-    <button class="btn-g" onclick="doReset()">Réinitialiser</button>
+  <div class="ghdr">
+    <div>
+      <div class="title" style="font-size:clamp(1.5rem,8vw,2.2rem);" id="gtitle">Grilles</div>
+      <div class="sub" id="gsub" style="margin-bottom:0;">—</div>
+    </div>
+    <div style="text-align:right;">
+      <div class="lbl" style="margin-bottom:4px;">Affaire n°</div>
+      <input class="case-inp" id="casenum" type="text" placeholder="___"/>
+    </div>
   </div>
+  <div class="gscroll" id="gcont"></div>
+  <div class="legend">
+    <div class="leg"><span style="color:var(--ac);font-size:1.05rem;">◆</span> Confirmé</div>
+    <div class="leg"><span style="color:var(--dg);font-size:1.05rem;">✕</span> Exclu</div>
+    <div class="leg"><span style="color:var(--tm);font-size:1.05rem;">·</span> Inconnu</div>
+  </div>
+  <div class="answers" id="acont"></div>
+  <div style="margin-top:24px;"><span class="lbl">Notes</span><textarea class="notes" id="notes" placeholder="Notes…"></textarea></div>
+  <div class="bact"><button class="btn-g" onclick="back()">← Modifier</button><button class="btn-g" onclick="doReset()">Réinitialiser</button></div>
 </div>
 
 </div>
-
 <script>
 let N=3, cats=[], cells={};
 
-/* ===== LIMITATION ===== */
-function setN(n,btn){
-  if(n!==3 && n!==4) return;
-  N=n;
-  document.querySelectorAll('.sz').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  renderForm();
-}
+function setN(n,btn){N=n;document.querySelectorAll('.sz').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderForm();}
 
-/* ===== CATEGORIES ===== */
 function defCats(n){
   const base=[
     {name:'Suspects',items:Array.from({length:n},(_,i)=>`Suspect ${i+1}`)},
-    {name:'Armes',items:Array.from({length:n},(_,i)=>`Arme ${i+1}`)},
-    {name:'Lieux',items:Array.from({length:n},(_,i)=>`Lieu ${i+1}`)}
+    {name:'Armes',   items:Array.from({length:n},(_,i)=>`Arme ${i+1}`)},
+    {name:'Lieux',   items:Array.from({length:n},(_,i)=>`Lieu ${i+1}`)},
   ];
   if(n>=4)base.push({name:'Mobiles',items:Array.from({length:n},(_,i)=>`Mobile ${i+1}`)});
   return base;
 }
 
-function renderForm(){
-  const defs=defCats(N);
-  const f=document.getElementById('cform');
-  f.innerHTML='';
-  defs.forEach(cat=>{
-    const div=document.createElement('div');
-    div.style.marginBottom="12px";
-    const title=document.createElement('div');
-    title.textContent=cat.name;
-    div.appendChild(title);
-    cat.items.forEach(it=>{
-      const inp=document.createElement('input');
-      inp.value=it;
-      inp.style.display="block";
-      inp.style.marginBottom="4px";
-      div.appendChild(inp);
-    });
-    f.appendChild(div);
-  });
+function readForm(){
+  const r=[];
+  document.querySelectorAll('[data-role=cn]').forEach(el=>{const ci=+el.dataset.ci;if(!r[ci])r[ci]={items:[]};r[ci].name=el.value.trim();});
+  document.querySelectorAll('[data-role=it]').forEach(el=>{const ci=+el.dataset.ci,ii=+el.dataset.ii;if(!r[ci])r[ci]={items:[]};r[ci].items[ii]=el.value.trim();});
+  return r;
 }
 
-/* ===== GRILLE ===== */
+function renderForm(){
+  const saved=readForm(),defs=defCats(N),nc=N>=4?4:3;
+  const f=document.getElementById('cform');f.innerHTML='';
+  for(let ci=0;ci<nc;ci++){
+    const sv=saved[ci]||{},df=defs[ci];
+    const block=document.createElement('div');block.className='cat-block';
+    const hr2=document.createElement('div');hr2.className='cat-hrow';
+    const dot=document.createElement('div');dot.className='dot';
+    const ni=document.createElement('input');ni.className='cni';ni.type='text';
+    ni.dataset.ci=ci;ni.dataset.role='cn';
+    ni.value=sv.name!==undefined?sv.name:df.name;ni.placeholder=df.name;
+    hr2.appendChild(dot);hr2.appendChild(ni);block.appendChild(hr2);
+    const col=document.createElement('div');col.className='items-col';
+    for(let ii=0;ii<N;ii++){
+      const inp=document.createElement('input');inp.className='ii';inp.type='text';
+      inp.dataset.ci=ci;inp.dataset.ii=ii;inp.dataset.role='it';
+      const sv2=sv.items&&sv.items[ii];
+      inp.value=sv2!==undefined?sv2:df.items[ii];inp.placeholder=df.items[ii];
+      col.appendChild(inp);
+    }
+    block.appendChild(col);f.appendChild(block);
+    if(ci<nc-1){const hr=document.createElement('hr');f.appendChild(hr);}
+  }
+}
+
 function openGrid(){
-  cats=defCats(N);
+  const form=readForm(),nc=N>=4?4:3,defs=defCats(N);
+  cats=[];
+  for(let ci=0;ci<nc;ci++){
+    const ff=form[ci]||{};
+    cats.push({name:ff.name||defs[ci].name,items:(ff.items||[]).map((v,j)=>v||defs[ci].items[j])});
+  }
+  cells={};
+  document.getElementById('gtitle').textContent='Grille';
+  document.getElementById('gsub').textContent=N+'×'+N+' — '+cats.map(c=>c.name).join(' · ');
   document.getElementById('gcont').innerHTML='';
   document.getElementById('gcont').appendChild(buildTable());
+  buildAnswers();
+  document.getElementById('notes').value='';
   document.getElementById('s0').classList.remove('active');
   document.getElementById('s1').classList.add('active');
+  window.scrollTo(0,0);
 }
 
 function buildTable(){
-  const table=document.createElement('table');
+  const n=N,nc=cats.length;
+  const colCats=cats.slice(0,nc-1); // cats 0..nc-2
+  const rowCats=cats.slice(1);      // cats 1..nc-1
+  // active when rgi >= cgi (lower-left triangle, no duplicates)
 
-  cats[0].items.forEach((row,r)=>{
-    const tr=document.createElement('tr');
+  const tbl=document.createElement('table');tbl.className='sc';
+  const thead=document.createElement('thead');
 
-    cats[1].items.forEach((col,c)=>{
-      const td=document.createElement('td');
-      const btn=document.createElement('button');
-      btn.className='cell';
-      btn.textContent='·';
-
-      btn.onclick=()=>{
-        const v=btn.textContent;
-        btn.textContent = v==='·' ? '◆' : v==='◆' ? '✕' : '·';
-      };
-
-      td.appendChild(btn);
-      tr.appendChild(td);
-    });
-
-    table.appendChild(tr);
+  // Row 1: category names
+  const tr1=document.createElement('tr');
+  const corner=document.createElement('th');corner.rowSpan=2;corner.colSpan=2;corner.className='corner';
+  tr1.appendChild(corner);
+  colCats.forEach((cat,gi)=>{
+    const th=document.createElement('th');th.colSpan=n;
+    th.textContent=cat.name.toUpperCase();th.className='ch'+(gi>0?' gbl':'');
+    tr1.appendChild(th);
   });
+  thead.appendChild(tr1);
 
-  return table;
+  // Row 2: item names
+  const tr2=document.createElement('tr');
+  colCats.forEach((cat,gi)=>{
+    cat.items.forEach((item,ii)=>{
+      const th=document.createElement('th');th.textContent=item;th.title=item;
+      th.className='ih'+(ii===0&&gi>0?' gbl':'');
+      tr2.appendChild(th);
+    });
+  });
+  thead.appendChild(tr2);
+  tbl.appendChild(thead);
+
+  const tbody=document.createElement('tbody');
+  rowCats.forEach((rowCat,rgi)=>{
+    rowCat.items.forEach((rowItem,rii)=>{
+      const tr=document.createElement('tr');
+      if(rii===0){
+        const th=document.createElement('th');th.rowSpan=n;
+        th.className='rgl'+(rgi>0?' gbt':'');
+        th.textContent=rowCat.name.toUpperCase();
+        tr.appendChild(th);
+      }
+      const ril=document.createElement('th');ril.textContent=rowItem;ril.title=rowItem;
+      ril.className='ril'+(rii===0&&rgi>0?' gbt':'');
+      tr.appendChild(ril);
+
+      colCats.forEach((colCat,cgi)=>{
+        colCat.items.forEach((colItem,cii)=>{
+          const td=document.createElement('td');
+          let cls=(cii===0&&cgi>0)?' gbl':'';
+          cls+=(rii===0&&rgi>0)?' gbt':'';
+          if(rgi>=cgi){
+            td.className='dc'+cls;
+            const key=rgi+','+rii+','+cgi+','+cii;
+            const s=cells[key]||'';
+            const btn=document.createElement('button');btn.className='cell';
+            btn.dataset.key=key;btn.setAttribute('data-s',s);btn.textContent=sc(s);
+            btn.addEventListener('click',()=>cycle(rgi,rii,cgi,cii));
+            td.appendChild(btn);
+          } else {
+            td.className='blk'+cls;
+          }
+          tr.appendChild(td);
+        });
+      });
+      tbody.appendChild(tr);
+    });
+  });
+  tbl.appendChild(tbody);
+  return tbl;
 }
 
-/* ===== NAV ===== */
-function back(){
-  document.getElementById('s1').classList.remove('active');
-  document.getElementById('s0').classList.add('active');
+function sc(s){return s==='yes'?'◆':s==='no'?'✕':'·';}
+
+function cycle(rgi,rii,cgi,cii){
+  const key=rgi+','+rii+','+cgi+','+cii;
+  const cur=cells[key]||'';
+  const next=cur===''?'yes':cur==='yes'?'no':'';
+  cells[key]=next;
+  upd(key);
+  if(next==='yes'){
+    // exclude same (rgi,rii,cgi) row → other cii
+    cats[cgi].items.forEach((_,c2)=>{
+      if(c2===cii)return;
+      const k=rgi+','+rii+','+cgi+','+c2;
+      if((cells[k]||'')!=='yes'){cells[k]='no';upd(k);}
+    });
+    // exclude same (rgi,cgi,cii) col → other rii
+    cats.slice(1)[rgi].items.forEach((_,r2)=>{
+      if(r2===rii)return;
+      const k=rgi+','+r2+','+cgi+','+cii;
+      if((cells[k]||'')!=='yes'){cells[k]='no';upd(k);}
+    });
+  }
+}
+
+function upd(key){
+  const b=document.querySelector('[data-key="'+key+'"]');
+  if(b){b.setAttribute('data-s',cells[key]||'');b.textContent=sc(cells[key]||'');}
+}
+
+function buildAnswers(){
+  const c=document.getElementById('acont');c.innerHTML='';
+  const qs=[{q:'Qui ?',cat:cats[0]},{q:'Quoi ?',cat:cats[1]},{q:'Où ?',cat:cats[2]}];
+  if(cats.length>3)qs.push({q:'Mobile ?',cat:cats[3]});
+  qs.forEach(({q,cat})=>{
+    const row=document.createElement('div');row.className='arow';
+    const lbl=document.createElement('span');lbl.className='aq';lbl.textContent=q;
+    const inp=document.createElement('input');inp.className='aline';inp.type='text';inp.placeholder=cat.name;
+    row.appendChild(lbl);row.appendChild(inp);c.appendChild(row);
+  });
 }
 
 function doReset(){
-  location.reload();
+  cells={};
+  document.querySelectorAll('.cell').forEach(b=>{b.setAttribute('data-s','');b.textContent='·';});
+  document.querySelectorAll('.aline').forEach(i=>i.value='');
+  document.getElementById('notes').value='';
+}
+
+function back(){
+  document.getElementById('s1').classList.remove('active');
+  document.getElementById('s0').classList.add('active');
+  window.scrollTo(0,0);
 }
 
 renderForm();
 </script>
-
 </body>
 </html>
